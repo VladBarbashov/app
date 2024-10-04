@@ -17,14 +17,19 @@ find_package(Boost REQUIRED)
 pkg_check_modules(LIBPQXX REQUIRED libpqxx)
 pkg_check_modules(LIBPQ REQUIRED libpq)
 
-include_directories(libs auth database monitor ${LIBPQXX_INCLUDE_DIRS} ${LIBPQ_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
+include_directories(libs database auth monitor ${LIBPQXX_INCLUDE_DIRS} ${LIBPQ_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 set(PROJECT_HEADERS
     libs/json.h
 
     database/dbvalidator.h
+    database/tablevalidator.h
+    database/usertablevalidator.h
 
     auth/authexceptions.h
+    auth/authvalidator.h
+    auth/loginvalidator.h
+    auth/passwdvalidator.h
     auth/usercontroller.h
     auth/loginwindow.h
     auth/registerwindow.h
@@ -37,7 +42,10 @@ set(PROJECT_SOURCES
     main.cpp
 
     database/dbvalidator.cpp
+    database/usertablevalidator.cpp
 
+    auth/loginvalidator.cpp
+    auth/passwdvalidator.cpp
     auth/usercontroller.cpp
     auth/loginwindow.cpp
     auth/registerwindow.cpp
@@ -78,11 +86,6 @@ else()
     else()
         add_executable(app
             ${PROJECT_FILES}
-            auth/authvalidator.h
-            auth/passwdvalidator.h auth/passwdvalidator.cpp
-            auth/loginvalidator.h auth/loginvalidator.cpp
-            database/tablevalidator.h
-            database/usertablevalidator.h database/usertablevalidator.cpp
         )
     endif()
 endif()
