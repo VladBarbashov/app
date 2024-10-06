@@ -7,11 +7,12 @@ UserTableValidator::UserTableValidator(std::string_view tableName, pqxx::connect
 void UserTableValidator::validateTable() {
     if (!tableExists()) {
         createTable();
+        return;
     }
 
     switch(checkTable()) {
     case ValidationStatus::INVALID:
-        throw std::runtime_error("Cant validate database");
+        throw std::runtime_error("UserTableValidator: Cant validate users table");
 
     case ValidationStatus::NEED_UPDATE:
         updateTable();
@@ -23,25 +24,43 @@ void UserTableValidator::validateTable() {
 }
 
 void UserTableValidator::removeTable() {
-    pqxx::nontransaction nonTr(*db);
-    nonTr.exec("DROP TABLE IF EXISTS " + tableName);
+    try {
+        pqxx::nontransaction nonTr(*db);
+        nonTr.exec("DROP TABLE IF EXISTS " + tableName);
+    } catch (pqxx::failure &e) {
+        std::string text = "UserTableValidator: ";
+        text.append(e.what());
+        throw std::runtime_error(text);
+    }
 }
 
 bool UserTableValidator::tableExists() const {
-    pqxx::nontransaction nonTr(*db);
-    pqxx::result result = nonTr.exec("SELECT 1 "
-                                     "FROM information_schema.tables "
-                                     "WHERE table_schema = 'public' "
-                                     "AND table_name = " + nonTr.quote(tableName));
-    return !result.empty();
+    try {
+        pqxx::nontransaction nonTr(*db);
+        pqxx::result result = nonTr.exec("SELECT 1 "
+                                         "FROM information_schema.tables "
+                                         "WHERE table_schema = 'public' "
+                                         "AND table_name = " + nonTr.quote(tableName));
+        return !result.empty();
+    } catch (pqxx::failure &e) {
+        std::string text = "UserTableValidator: ";
+        text.append(e.what());
+        throw std::runtime_error(text);
+    }
 }
 
 void UserTableValidator::createTable() {
-    pqxx::nontransaction nonTr(*db);
-    nonTr.exec("CREATE TABLE IF NOT EXISTS " + tableName +
-               "(id SERIAL PRIMARY KEY,"
-               "login VARCHAR(30),"
-               "passwd VARCHAR(50))");
+    try {
+        pqxx::nontransaction nonTr(*db);
+        nonTr.exec("CREATE TABLE IF NOT EXISTS " + tableName +
+                   "(id SERIAL PRIMARY KEY,"
+                   "login VARCHAR(30),"
+                   "passwd VARCHAR(50))");
+    } catch (pqxx::failure &e) {
+        std::string text = "UserTableValidator: ";
+        text.append(e.what());
+        throw std::runtime_error(text);
+    }
 }
 
 UserTableValidator::ValidationStatus UserTableValidator::checkTable() const{
