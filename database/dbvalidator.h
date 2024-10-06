@@ -26,7 +26,7 @@ private:
 
     void validateTables();
 
-    const std::string dbName = "app";
+    const std::string dbName;
     pqxx::connection *db = nullptr;
 
     std::vector<TableValidator*> validators;
