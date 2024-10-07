@@ -33,7 +33,7 @@ void RegisterWindow::on_registerBtn_clicked() {
         MainWindow *mainWindow = new MainWindow();
         mainWindow->show();
         close();
-    } catch (...) {
-        QMessageBox::warning(this, "Ошибка регистрации", "Логин и пароль должны быть не пустыми");
+    } catch (auth::AuthException &e) {
+        QMessageBox::warning(this, "Ошибка регистрации", e.what());
     }
 }
