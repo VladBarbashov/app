@@ -1,31 +1,32 @@
 #include <QApplication>
+#include <QMessageBox>
 
 #include "loginwindow.h"
 #include "dbvalidator.h"
 #include "usercontroller.h"
 
-#include <QDebug>
 
-
-int main(int argc, char *argv[]) try {
+int main(int argc, char *argv[]) {
     std::string dbName = "app";
     if (argc > 1) {
         dbName = argv[1];
     }
-
     QApplication app(argc, argv);
 
-    DBValidator dbValidator(dbName);
-    dbValidator.validateDatabase();
+    try {
+        DBValidator dbValidator(dbName);
+        dbValidator.validateDatabase();
 
-    UserController userController(dbValidator.getDBInstance());
-    LoginWindow window(std::move(userController));
-    window.show();
+        UserController userController(dbValidator.getDBInstance());
+        LoginWindow window(std::move(userController));
+        window.show();
 
-    return app.exec();
-} catch (const std::exception &e) {
-    qDebug() << e.what();
-    return 1;
-} catch(...) {
-    return 1;
+        return app.exec();
+    } catch (pqxx::failure &e) {
+        QMessageBox::warning(nullptr, "Ошибка", "Ошибка при работе с базой данных!");
+        return 1;
+    } catch (...) {
+        QMessageBox::warning(nullptr, "Ошибка", "Неизвестная ошибка!");
+        return 1;
+    }
 }
